@@ -2,19 +2,21 @@ package config
 
 import (
 	env "github.com/Netflix/go-env"
+	"github.com/joho/godotenv"
 )
 
-type Environment struct {
+type EnvironmentType struct {
 	JwtKey string `env:"JWT_KEY,required=true"`
 }
 
-var environment Environment
+var Environment EnvironmentType
 
 func InitializeEnv() error {
-	es, err := env.UnmarshalFromEnviron(&environment)
+	_ = godotenv.Load()
+	_, err := env.UnmarshalFromEnviron(&Environment)
 	if err != nil {
 		return err
 	}
 
-	return err
+	return nil
 }

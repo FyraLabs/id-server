@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/fyralabs/id-server/ent/session"
 	"github.com/fyralabs/id-server/ent/user"
 	"github.com/google/uuid"
 )
@@ -57,6 +58,21 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
 	return uc
+}
+
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uc *UserCreate) AddSessionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddSessionIDs(ids...)
+	return uc
+}
+
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddSessionIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -217,6 +233,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: session.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

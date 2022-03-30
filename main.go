@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/routes"
 	"github.com/gofiber/fiber/v2"
@@ -8,9 +9,20 @@ import (
 )
 
 func main() {
-	database.InitializeDatabase()
+	err := database.InitializeDatabase()
+	if err != nil {
+		panic(err.Error())
+	}
 	defer database.DatabaseClient.Close()
+
+	err = config.InitializeEnv()
+	if err != nil {
+		panic(err.Error())
+	}
+
 	app := fiber.New()
 	routes.Register(app)
-	app.Listen(":3000")
+	if err := app.Listen(":3000"); err != nil {
+		panic(err.Error())
+	}
 }

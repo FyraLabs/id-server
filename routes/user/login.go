@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"github.com/fyralabs/id-server/config"
 
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/ent/user"
@@ -75,7 +76,7 @@ func Login(c *fiber.Ctx) error {
 		"sub": s.ID,
 	})
 
-	tokenString, err := token.SignedString([]byte("dasdsadsadasdsasaddsadsa"))
+	tokenString, err := token.SignedString([]byte(config.Environment.JwtKey))
 
 	if err != nil {
 		return err

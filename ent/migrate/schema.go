@@ -15,7 +15,7 @@ var (
 		{Name: "user_agent", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
-		{Name: "session_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_sessions", Type: field.TypeUUID, Nullable: true},
 	}
 	// SessionsTable holds the schema information for the "sessions" table.
 	SessionsTable = &schema.Table{
@@ -24,7 +24,7 @@ var (
 		PrimaryKey: []*schema.Column{SessionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "sessions_users_user",
+				Symbol:     "sessions_users_sessions",
 				Columns:    []*schema.Column{SessionsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
