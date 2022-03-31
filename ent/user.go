@@ -25,8 +25,8 @@ type User struct {
 	Password string `json:"password,omitempty"`
 	// CreatedAt holds the value of the "createdAt" field.
 	CreatedAt time.Time `json:"createdAt,omitempty"`
-	// EmailValidated holds the value of the "emailValidated" field.
-	EmailValidated bool `json:"emailValidated,omitempty"`
+	// EmailVerified holds the value of the "emailVerified" field.
+	EmailVerified bool `json:"emailVerified,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -55,7 +55,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmailValidated:
+		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
 		case user.FieldName, user.FieldEmail, user.FieldPassword:
 			values[i] = new(sql.NullString)
@@ -108,11 +108,11 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.CreatedAt = value.Time
 			}
-		case user.FieldEmailValidated:
+		case user.FieldEmailVerified:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field emailValidated", values[i])
+				return fmt.Errorf("unexpected type %T for field emailVerified", values[i])
 			} else if value.Valid {
-				u.EmailValidated = value.Bool
+				u.EmailVerified = value.Bool
 			}
 		}
 	}
@@ -155,8 +155,8 @@ func (u *User) String() string {
 	builder.WriteString(u.Password)
 	builder.WriteString(", createdAt=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", emailValidated=")
-	builder.WriteString(fmt.Sprintf("%v", u.EmailValidated))
+	builder.WriteString(", emailVerified=")
+	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))
 	builder.WriteByte(')')
 	return builder.String()
 }

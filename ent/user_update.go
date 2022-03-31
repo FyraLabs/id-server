@@ -62,16 +62,16 @@ func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
-// SetEmailValidated sets the "emailValidated" field.
-func (uu *UserUpdate) SetEmailValidated(b bool) *UserUpdate {
-	uu.mutation.SetEmailValidated(b)
+// SetEmailVerified sets the "emailVerified" field.
+func (uu *UserUpdate) SetEmailVerified(b bool) *UserUpdate {
+	uu.mutation.SetEmailVerified(b)
 	return uu
 }
 
-// SetNillableEmailValidated sets the "emailValidated" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableEmailValidated(b *bool) *UserUpdate {
+// SetNillableEmailVerified sets the "emailVerified" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableEmailVerified(b *bool) *UserUpdate {
 	if b != nil {
-		uu.SetEmailValidated(*b)
+		uu.SetEmailVerified(*b)
 	}
 	return uu
 }
@@ -217,11 +217,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldCreatedAt,
 		})
 	}
-	if value, ok := uu.mutation.EmailValidated(); ok {
+	if value, ok := uu.mutation.EmailVerified(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeBool,
 			Value:  value,
-			Column: user.FieldEmailValidated,
+			Column: user.FieldEmailVerified,
 		})
 	}
 	if uu.mutation.SessionsCleared() {
@@ -329,16 +329,16 @@ func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
-// SetEmailValidated sets the "emailValidated" field.
-func (uuo *UserUpdateOne) SetEmailValidated(b bool) *UserUpdateOne {
-	uuo.mutation.SetEmailValidated(b)
+// SetEmailVerified sets the "emailVerified" field.
+func (uuo *UserUpdateOne) SetEmailVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetEmailVerified(b)
 	return uuo
 }
 
-// SetNillableEmailValidated sets the "emailValidated" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableEmailValidated(b *bool) *UserUpdateOne {
+// SetNillableEmailVerified sets the "emailVerified" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableEmailVerified(b *bool) *UserUpdateOne {
 	if b != nil {
-		uuo.SetEmailValidated(*b)
+		uuo.SetEmailVerified(*b)
 	}
 	return uuo
 }
@@ -508,11 +508,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldCreatedAt,
 		})
 	}
-	if value, ok := uuo.mutation.EmailValidated(); ok {
+	if value, ok := uuo.mutation.EmailVerified(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeBool,
 			Value:  value,
-			Column: user.FieldEmailValidated,
+			Column: user.FieldEmailVerified,
 		})
 	}
 	if uuo.mutation.SessionsCleared() {

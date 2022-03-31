@@ -26,8 +26,8 @@ func init() {
 	userDescCreatedAt := userFields[4].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the createdAt field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
-	// userDescEmailValidated is the schema descriptor for emailValidated field.
-	userDescEmailValidated := userFields[5].Descriptor()
-	// user.DefaultEmailValidated holds the default value on creation for the emailValidated field.
-	user.DefaultEmailValidated = userDescEmailValidated.Default.(bool)
+	// userDescEmailVerified is the schema descriptor for emailVerified field.
+	userDescEmailVerified := userFields[5].Descriptor()
+	// user.DefaultEmailVerified holds the default value on creation for the emailVerified field.
+	user.DefaultEmailVerified = userDescEmailVerified.Default.(bool)
 }

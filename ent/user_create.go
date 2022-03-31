@@ -54,16 +54,16 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetEmailValidated sets the "emailValidated" field.
-func (uc *UserCreate) SetEmailValidated(b bool) *UserCreate {
-	uc.mutation.SetEmailValidated(b)
+// SetEmailVerified sets the "emailVerified" field.
+func (uc *UserCreate) SetEmailVerified(b bool) *UserCreate {
+	uc.mutation.SetEmailVerified(b)
 	return uc
 }
 
-// SetNillableEmailValidated sets the "emailValidated" field if the given value is not nil.
-func (uc *UserCreate) SetNillableEmailValidated(b *bool) *UserCreate {
+// SetNillableEmailVerified sets the "emailVerified" field if the given value is not nil.
+func (uc *UserCreate) SetNillableEmailVerified(b *bool) *UserCreate {
 	if b != nil {
-		uc.SetEmailValidated(*b)
+		uc.SetEmailVerified(*b)
 	}
 	return uc
 }
@@ -164,9 +164,9 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
 	}
-	if _, ok := uc.mutation.EmailValidated(); !ok {
-		v := user.DefaultEmailValidated
-		uc.mutation.SetEmailValidated(v)
+	if _, ok := uc.mutation.EmailVerified(); !ok {
+		v := user.DefaultEmailVerified
+		uc.mutation.SetEmailVerified(v)
 	}
 }
 
@@ -184,8 +184,8 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "User.createdAt"`)}
 	}
-	if _, ok := uc.mutation.EmailValidated(); !ok {
-		return &ValidationError{Name: "emailValidated", err: errors.New(`ent: missing required field "User.emailValidated"`)}
+	if _, ok := uc.mutation.EmailVerified(); !ok {
+		return &ValidationError{Name: "emailVerified", err: errors.New(`ent: missing required field "User.emailVerified"`)}
 	}
 	return nil
 }
@@ -255,13 +255,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		_node.CreatedAt = value
 	}
-	if value, ok := uc.mutation.EmailValidated(); ok {
+	if value, ok := uc.mutation.EmailVerified(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeBool,
 			Value:  value,
-			Column: user.FieldEmailValidated,
+			Column: user.FieldEmailVerified,
 		})
-		_node.EmailValidated = value
+		_node.EmailVerified = value
 	}
 	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

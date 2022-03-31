@@ -610,7 +610,7 @@ type UserMutation struct {
 	email           *string
 	password        *string
 	createdAt       *time.Time
-	emailValidated  *bool
+	emailVerified   *bool
 	clearedFields   map[string]struct{}
 	sessions        map[uuid.UUID]struct{}
 	removedsessions map[uuid.UUID]struct{}
@@ -868,40 +868,40 @@ func (m *UserMutation) ResetCreatedAt() {
 	m.createdAt = nil
 }
 
-// SetEmailValidated sets the "emailValidated" field.
-func (m *UserMutation) SetEmailValidated(b bool) {
-	m.emailValidated = &b
+// SetEmailVerified sets the "emailVerified" field.
+func (m *UserMutation) SetEmailVerified(b bool) {
+	m.emailVerified = &b
 }
 
-// EmailValidated returns the value of the "emailValidated" field in the mutation.
-func (m *UserMutation) EmailValidated() (r bool, exists bool) {
-	v := m.emailValidated
+// EmailVerified returns the value of the "emailVerified" field in the mutation.
+func (m *UserMutation) EmailVerified() (r bool, exists bool) {
+	v := m.emailVerified
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldEmailValidated returns the old "emailValidated" field's value of the User entity.
+// OldEmailVerified returns the old "emailVerified" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldEmailValidated(ctx context.Context) (v bool, err error) {
+func (m *UserMutation) OldEmailVerified(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEmailValidated is only allowed on UpdateOne operations")
+		return v, errors.New("OldEmailVerified is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEmailValidated requires an ID field in the mutation")
+		return v, errors.New("OldEmailVerified requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEmailValidated: %w", err)
+		return v, fmt.Errorf("querying old value for OldEmailVerified: %w", err)
 	}
-	return oldValue.EmailValidated, nil
+	return oldValue.EmailVerified, nil
 }
 
-// ResetEmailValidated resets all changes to the "emailValidated" field.
-func (m *UserMutation) ResetEmailValidated() {
-	m.emailValidated = nil
+// ResetEmailVerified resets all changes to the "emailVerified" field.
+func (m *UserMutation) ResetEmailVerified() {
+	m.emailVerified = nil
 }
 
 // AddSessionIDs adds the "sessions" edge to the Session entity by ids.
@@ -990,8 +990,8 @@ func (m *UserMutation) Fields() []string {
 	if m.createdAt != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
-	if m.emailValidated != nil {
-		fields = append(fields, user.FieldEmailValidated)
+	if m.emailVerified != nil {
+		fields = append(fields, user.FieldEmailVerified)
 	}
 	return fields
 }
@@ -1009,8 +1009,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Password()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
-	case user.FieldEmailValidated:
-		return m.EmailValidated()
+	case user.FieldEmailVerified:
+		return m.EmailVerified()
 	}
 	return nil, false
 }
@@ -1028,8 +1028,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPassword(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case user.FieldEmailValidated:
-		return m.OldEmailValidated(ctx)
+	case user.FieldEmailVerified:
+		return m.OldEmailVerified(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -1067,12 +1067,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case user.FieldEmailValidated:
+	case user.FieldEmailVerified:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetEmailValidated(v)
+		m.SetEmailVerified(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -1135,8 +1135,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case user.FieldEmailValidated:
-		m.ResetEmailValidated()
+	case user.FieldEmailVerified:
+		m.ResetEmailVerified()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
