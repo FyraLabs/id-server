@@ -4,6 +4,7 @@ import (
 	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/routes"
+	"github.com/fyralabs/id-server/util"
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -13,6 +14,8 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	util.InitializeSendGrid()
 
 	err = database.InitializeDatabase()
 	if err != nil {
