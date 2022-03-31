@@ -48,5 +48,5 @@ func UpdateMe(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.SendStatus(200)
+	return c.SendStatus(fiber.StatusOK)
 }

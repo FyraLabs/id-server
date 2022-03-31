@@ -48,5 +48,5 @@ func RevokeSession(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.SendStatus(200)
+	return c.SendStatus(fiber.StatusOK)
 }
