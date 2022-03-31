@@ -122,6 +122,13 @@ func CreatedAt(v time.Time) predicate.User {
 	})
 }
 
+// EmailValidated applies equality check predicate on the "emailValidated" field. It's identical to EmailValidatedEQ.
+func EmailValidated(v bool) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldEmailValidated), v))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -528,6 +535,20 @@ func CreatedAtLT(v time.Time) predicate.User {
 func CreatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
+	})
+}
+
+// EmailValidatedEQ applies the EQ predicate on the "emailValidated" field.
+func EmailValidatedEQ(v bool) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldEmailValidated), v))
+	})
+}
+
+// EmailValidatedNEQ applies the NEQ predicate on the "emailValidated" field.
+func EmailValidatedNEQ(v bool) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldEmailValidated), v))
 	})
 }
 

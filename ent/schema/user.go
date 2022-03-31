@@ -22,6 +22,7 @@ func (User) Fields() []ent.Field {
 		field.String("email").Unique(),
 		field.String("password"),
 		field.Time("createdAt").Default(time.Now),
+		field.Bool("emailValidated").Default(false),
 	}
 }
 

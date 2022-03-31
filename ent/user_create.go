@@ -54,6 +54,20 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetEmailValidated sets the "emailValidated" field.
+func (uc *UserCreate) SetEmailValidated(b bool) *UserCreate {
+	uc.mutation.SetEmailValidated(b)
+	return uc
+}
+
+// SetNillableEmailValidated sets the "emailValidated" field if the given value is not nil.
+func (uc *UserCreate) SetNillableEmailValidated(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetEmailValidated(*b)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
@@ -150,6 +164,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := uc.mutation.EmailValidated(); !ok {
+		v := user.DefaultEmailValidated
+		uc.mutation.SetEmailValidated(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -165,6 +183,9 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "User.createdAt"`)}
+	}
+	if _, ok := uc.mutation.EmailValidated(); !ok {
+		return &ValidationError{Name: "emailValidated", err: errors.New(`ent: missing required field "User.emailValidated"`)}
 	}
 	return nil
 }
@@ -233,6 +254,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if value, ok := uc.mutation.EmailValidated(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: user.FieldEmailValidated,
+		})
+		_node.EmailValidated = value
 	}
 	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -19,6 +19,8 @@ const (
 	FieldPassword = "password"
 	// FieldCreatedAt holds the string denoting the createdat field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldEmailValidated holds the string denoting the emailvalidated field in the database.
+	FieldEmailValidated = "email_validated"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
 	EdgeSessions = "sessions"
 	// Table holds the table name of the user in the database.
@@ -39,6 +41,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPassword,
 	FieldCreatedAt,
+	FieldEmailValidated,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -54,4 +57,6 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultCreatedAt holds the default value on creation for the "createdAt" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultEmailValidated holds the default value on creation for the "emailValidated" field.
+	DefaultEmailValidated bool
 )

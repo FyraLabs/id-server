@@ -62,6 +62,20 @@ func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
+// SetEmailValidated sets the "emailValidated" field.
+func (uu *UserUpdate) SetEmailValidated(b bool) *UserUpdate {
+	uu.mutation.SetEmailValidated(b)
+	return uu
+}
+
+// SetNillableEmailValidated sets the "emailValidated" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableEmailValidated(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetEmailValidated(*b)
+	}
+	return uu
+}
+
 // AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
 func (uu *UserUpdate) AddSessionIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddSessionIDs(ids...)
@@ -203,6 +217,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldCreatedAt,
 		})
 	}
+	if value, ok := uu.mutation.EmailValidated(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: user.FieldEmailValidated,
+		})
+	}
 	if uu.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -304,6 +325,20 @@ func (uuo *UserUpdateOne) SetCreatedAt(t time.Time) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
 	if t != nil {
 		uuo.SetCreatedAt(*t)
+	}
+	return uuo
+}
+
+// SetEmailValidated sets the "emailValidated" field.
+func (uuo *UserUpdateOne) SetEmailValidated(b bool) *UserUpdateOne {
+	uuo.mutation.SetEmailValidated(b)
+	return uuo
+}
+
+// SetNillableEmailValidated sets the "emailValidated" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableEmailValidated(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetEmailValidated(*b)
 	}
 	return uuo
 }
@@ -471,6 +506,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: user.FieldCreatedAt,
+		})
+	}
+	if value, ok := uuo.mutation.EmailValidated(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: user.FieldEmailValidated,
 		})
 	}
 	if uuo.mutation.SessionsCleared() {

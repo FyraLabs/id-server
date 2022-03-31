@@ -28,7 +28,7 @@ func UpdateMe(c *fiber.Ctx) error {
 	u := user.Update()
 
 	if updateData.Email != nil {
-		u = u.SetEmail(*updateData.Email)
+		u = u.SetEmail(*updateData.Email).SetEmailValidated(false)
 	}
 
 	if updateData.Name != nil {
