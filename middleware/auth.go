@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"github.com/fyralabs/id-server/database"
-	"github.com/fyralabs/id-server/ent/session"
 	"github.com/google/uuid"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func Auth(c *fiber.Ctx) error {
-	tokenString, ok := c.GetRespHeaders()["Authorization"]
+	tokenString, ok := c.GetReqHeaders()["Authorization"]
 
 	if !ok {
 		return c.Status(401).JSON(fiber.Map{"message": "Unauthorized"})
@@ -24,7 +23,7 @@ func Auth(c *fiber.Ctx) error {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return config.Environment.JwtKey, nil
+		return []byte(config.Environment.JwtKey), nil
 	})
 
 	if err != nil {
@@ -55,13 +54,9 @@ func Auth(c *fiber.Ctx) error {
 		return err
 	}
 
-	s, err := database.DatabaseClient.Session.
-		Query().
-		Where(session.ID(parse)).
-		Only(c.Context())
-
+	s, err := database.DatabaseClient.Session.Get(c.Context(), parse)
 	if err != nil {
-		return err
+		return c.Status(401).JSON(fiber.Map{"message": "Invalid token"})
 	}
 
 	userAgent, ok := c.GetReqHeaders()["User-Agent"]
@@ -79,8 +74,13 @@ func Auth(c *fiber.Ctx) error {
 		return err
 	}
 
-	c.Set("session", s.ID.String())
-	c.Set("user", s.Edges.User.ID.String())
+	user, err := s.QueryUser().Only(c.Context())
+	if err != nil {
+		return err
+	}
+
+	c.Locals("session", s)
+	c.Locals("user", user)
 
 	return c.Next()
 }

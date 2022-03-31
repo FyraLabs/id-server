@@ -9,16 +9,16 @@ import (
 )
 
 func main() {
-	err := database.InitializeDatabase()
+	err := config.InitializeEnv()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = database.InitializeDatabase()
 	if err != nil {
 		panic(err.Error())
 	}
 	defer database.DatabaseClient.Close()
-
-	err = config.InitializeEnv()
-	if err != nil {
-		panic(err.Error())
-	}
 
 	app := fiber.New()
 	routes.Register(app)
