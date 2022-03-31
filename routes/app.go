@@ -4,9 +4,12 @@ import (
 	"github.com/fyralabs/id-server/middleware"
 	"github.com/fyralabs/id-server/routes/user"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func Register(app *fiber.App) {
+	app.Use(cors.New())
+
 	userGroup := app.Group("/user")
 	userGroup.Post("/register", user.Register)
 	userGroup.Post("/login", user.Login)
