@@ -1,8 +1,11 @@
 package user
 
 import (
+	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/ent"
+	"github.com/fyralabs/id-server/ent/session"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 )
 
@@ -23,4 +26,27 @@ func GetSessions(c *fiber.Ctx) error {
 			"lastUsedAt": s.LastUsedAt.String(),
 		}
 	}))
+}
+
+func RevokeSession(c *fiber.Ctx) error {
+	user := c.Locals("user").(*ent.User)
+
+	sessionIdString := c.Params("id")
+
+	sessionId, err := uuid.Parse(sessionIdString)
+	if err != nil {
+		return err
+	}
+
+	// This should prevent someone from revoking someone else's session
+	session, err := user.QuerySessions().Where(session.ID(sessionId)).Only(c.Context())
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"message": "Session not found"})
+	}
+
+	if err := database.DatabaseClient.Session.DeleteOne(session).Exec(c.Context()); err != nil {
+		return err
+	}
+
+	return c.SendStatus(200)
 }

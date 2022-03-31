@@ -17,4 +17,5 @@ func Register(app *fiber.App) {
 	meGroup.Patch("/", user.UpdateMe)
 	meGroup.Get("/", user.GetMe)
 	meGroup.Get("/sessions", user.GetSessions)
+	meGroup.Delete("/sessions/:id", user.RevokeSession)
 }

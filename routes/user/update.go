@@ -39,5 +39,5 @@ func UpdateMe(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(200).Send(nil)
+	return c.SendStatus(200)
 }
