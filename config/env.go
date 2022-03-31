@@ -8,6 +8,7 @@ import (
 type EnvironmentType struct {
 	JwtKey          string `env:"JWT_KEY,required=true"`
 	DatabaseOptions string `env:"DATABASE_OPTIONS,required=true"`
+	SendGridKey     string `env:"SENDGRID_KEY,required=true"`
 }
 
 var Environment EnvironmentType

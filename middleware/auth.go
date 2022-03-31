@@ -49,6 +49,11 @@ func Auth(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"message": "Invalid token"})
 	}
 
+	tokenType, ok := claims["type"].(string)
+	if !ok || tokenType != "session" {
+		return c.Status(401).JSON(fiber.Map{"message": "Invalid token"})
+	}
+
 	parse, err := uuid.Parse(sessionString)
 	if err != nil {
 		return err

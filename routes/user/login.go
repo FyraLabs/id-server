@@ -73,7 +73,8 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": s.ID,
+		"sub":  s.ID.String(),
+		"type": "session",
 	})
 
 	tokenString, err := token.SignedString([]byte(config.Environment.JwtKey))

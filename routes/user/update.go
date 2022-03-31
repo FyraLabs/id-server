@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"github.com/fyralabs/id-server/ent"
+	"github.com/fyralabs/id-server/util"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -35,8 +36,16 @@ func UpdateMe(c *fiber.Ctx) error {
 		u = u.SetName(*updateData.Name)
 	}
 
-	if _, err := u.Save(c.Context()); err != nil {
+	updatedUser, err := u.Save(c.Context())
+
+	if err != nil {
 		return err
+	}
+
+	if updateData.Email != nil {
+		if err := util.SendVerificationEmail(updatedUser); err != nil {
+			return err
+		}
 	}
 
 	return c.SendStatus(200)

@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"github.com/fyralabs/id-server/util"
 
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/ent/user"
@@ -56,6 +57,10 @@ func Register(c *fiber.Ctx) error {
 		Save(c.Context())
 
 	if err != nil {
+		return err
+	}
+
+	if err := util.SendVerificationEmail(u); err != nil {
 		return err
 	}
 

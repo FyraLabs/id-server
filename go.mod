@@ -14,6 +14,7 @@ require (
 	github.com/matthewhartstonge/argon2 v0.2.1
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/samber/lo v1.11.0
+	github.com/sendgrid/sendgrid-go v3.11.1+incompatible
 )
 
 require (
@@ -29,6 +30,7 @@ require (
 	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.34.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
