@@ -13,6 +13,7 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/matthewhartstonge/argon2 v0.2.1
 	github.com/mattn/go-sqlite3 v1.14.12
+	github.com/samber/lo v1.11.0
 )
 
 require (
@@ -33,7 +34,8 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
-	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )

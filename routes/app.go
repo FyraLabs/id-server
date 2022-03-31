@@ -8,9 +8,13 @@ import (
 
 func Register(app *fiber.App) {
 	userGroup := app.Group("/user")
-	userGroup.Use("/me", middleware.Auth)
 	userGroup.Post("/register", user.Register)
 	userGroup.Post("/login", user.Login)
-	userGroup.Patch("/me", user.UpdateMe)
-	userGroup.Get("/me", user.GetMe)
+
+	meGroup := userGroup.Group("/me")
+	meGroup.Use(middleware.Auth)
+	meGroup.Use("/", middleware.Auth)
+	meGroup.Patch("/", user.UpdateMe)
+	meGroup.Get("/", user.GetMe)
+	meGroup.Get("/sessions", user.GetSessions)
 }
