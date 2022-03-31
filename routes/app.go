@@ -11,5 +11,6 @@ func Register(app *fiber.App) {
 	userGroup.Use("/me", middleware.Auth)
 	userGroup.Post("/register", user.Register)
 	userGroup.Post("/login", user.Login)
+	userGroup.Patch("/me", user.UpdateMe)
 	userGroup.Get("/me", user.GetMe)
 }
