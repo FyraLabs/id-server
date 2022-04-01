@@ -35,7 +35,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	if !exists {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": "User doesn't exist"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User doesn't exist"})
 	}
 
 	u, err := database.DatabaseClient.User.
