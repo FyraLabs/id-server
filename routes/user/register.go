@@ -2,7 +2,9 @@ package user
 
 import (
 	"encoding/json"
+	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/util"
+	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/ent/user"
@@ -64,7 +66,35 @@ func Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"id": u.ID,
+	userAgent, ok := c.GetReqHeaders()["User-Agent"]
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "User-Agent header not found"})
+	}
+
+	s, err := database.DatabaseClient.Session.
+		Create().
+		SetID(uuid.New()).
+		SetUserID(u.ID).
+		SetIP(c.IP()).
+		SetUserAgent(userAgent).
+		Save(c.Context())
+
+	if err != nil {
+		return err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":  s.ID.String(),
+		"type": "session",
+	})
+
+	tokenString, err := token.SignedString([]byte(config.Environment.JwtKey))
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"token": tokenString,
 	})
 }
