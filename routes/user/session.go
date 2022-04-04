@@ -22,7 +22,7 @@ func GetSessions(c *fiber.Ctx) error {
 			"id":         s.ID.String(),
 			"ip":         s.IP,
 			"userAgent":  s.UserAgent,
-			"createdAt":  s.CreatedAt.String(),
+			"createdAt":  s.CreatedAt,
 			"lastUsedAt": s.LastUsedAt.String(),
 		}
 	}))
