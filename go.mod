@@ -17,6 +17,8 @@ require (
 	github.com/sendgrid/sendgrid-go v3.11.1+incompatible
 )
 
+require github.com/oschwald/maxminddb-golang v1.9.0 // indirect
+
 require (
 	ariga.io/atlas v0.3.7-0.20220303204946-787354f533c3 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
@@ -29,7 +31,9 @@ require (
 	github.com/hashicorp/hcl/v2 v2.10.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/mileusna/useragent v1.0.2
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+	github.com/oschwald/geoip2-golang v1.7.0
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.34.0 // indirect
@@ -38,6 +42,8 @@ require (
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
+	golang.org/x/sys v0.0.0-20220325203850-36772127a21f // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
+
+replace github.com/samber/lo => github.com/NilsJPWerner/lo v1.10.2-0.20220316200308-6c9f8a196d75

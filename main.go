@@ -17,6 +17,12 @@ func main() {
 
 	util.InitializeSendGrid()
 
+	err = util.InitializeGeoIP()
+	if err != nil {
+		panic(err.Error())
+	}
+	defer util.GeoIP.Close()
+
 	err = database.InitializeDatabase()
 	if err != nil {
 		panic(err.Error())
