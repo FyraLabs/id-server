@@ -20,6 +20,7 @@ func Register(app *fiber.App) {
 	meGroup.Use("/", middleware.Auth)
 	meGroup.Patch("/", user.UpdateMe)
 	meGroup.Get("/", user.GetMe)
+	meGroup.Post("/password", user.UpdateMyPassword)
 	meGroup.Get("/session", user.GetSessions)
 	meGroup.Delete("/session/:id", user.RevokeSession)
 }

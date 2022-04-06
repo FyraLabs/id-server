@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+
 	"github.com/fyralabs/id-server/config"
 
 	"github.com/fyralabs/id-server/database"
@@ -29,21 +30,17 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	exists, err := database.DatabaseClient.User.Query().Where(user.EmailEQ(userData.Email)).Exist(c.Context())
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User doesn't exist"})
-	}
-
 	u, err := database.DatabaseClient.User.
 		Query().
 		Where(user.EmailEQ(userData.Email)).
 		Only(c.Context())
+
 	if err != nil {
 		return err
+	}
+
+	if u == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User doesn't exist"})
 	}
 
 	valid, err := argon2.VerifyEncoded([]byte(userData.Password), []byte(u.Password))
