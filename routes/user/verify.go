@@ -2,12 +2,26 @@ package user
 
 import (
 	"fmt"
+
 	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/database"
+	"github.com/fyralabs/id-server/ent"
+	"github.com/fyralabs/id-server/util"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
+
+// TODO: Rate limit
+func RequestVerificationEmail(c *fiber.Ctx) error {
+	user := c.Locals("user").(*ent.User)
+
+	if err := util.SendVerificationEmail(user); err != nil {
+		return err
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
 
 func VerifyEmail(c *fiber.Ctx) error {
 	tokenString := c.Query("token")
