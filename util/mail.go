@@ -1,19 +1,20 @@
 package util
 
 import (
+	"errors"
+
 	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/ent"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
-	"os"
 )
 
 var SendGridClient *sendgrid.Client
 
 func InitializeSendGrid() {
-	SendGridClient = sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+	SendGridClient = sendgrid.NewSendClient(config.Environment.SendGridKey)
 }
 
 func GenerateEmailVerificationToken(userID uuid.UUID, email string) (string, error) {
@@ -44,8 +45,13 @@ func SendVerificationEmail(user *ent.User) error {
 	plainTextContent := "Hey" + user.Name + ",\n" + "Welcome to FyraLabs ID. Please click on the link below to verify your email!\n" + "https://id.fyralabs.com/verifyEmail?token=" + tokenString
 	message := mail.NewSingleEmail(from, subject, to, plainTextContent, "")
 
-	if _, err := SendGridClient.Send(message); err != nil {
+	r, err := SendGridClient.Send(message)
+	if err != nil {
 		return err
+	}
+
+	if r.StatusCode != 202 {
+		return errors.New(r.Body)
 	}
 
 	return nil
