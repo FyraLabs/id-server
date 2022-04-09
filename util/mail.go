@@ -1,7 +1,11 @@
 package util
 
 import (
+	"bytes"
+	"embed"
 	"errors"
+
+	"html/template"
 
 	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/ent"
@@ -11,6 +15,8 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
+//go:embed emails/*
+var emails embed.FS
 var SendGridClient *sendgrid.Client
 
 func InitializeSendGrid() {
@@ -19,7 +25,7 @@ func InitializeSendGrid() {
 
 func GenerateEmailVerificationToken(userID uuid.UUID, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":   userID.ID(),
+		"sub":   userID.String(),
 		"email": email,
 		"type":  "emailVerification",
 	})
@@ -39,11 +45,26 @@ func SendVerificationEmail(user *ent.User) error {
 		return err
 	}
 
+	buf := new(bytes.Buffer)
+
+	a, err := template.ParseFS(emails, "emails/verify.html")
+
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		ConfirmURL string
+	}{
+		ConfirmURL: "https://accounts.fyralabs.com/verifyEmail?token=" + tokenString,
+	}
+
+	a.Execute(buf, data)
+
 	to := mail.NewEmail(user.Name, user.Email)
-	from := mail.NewEmail("FiraLabs ID", "noreply@fyralabs.com")
-	subject := "Verify Your FyraLabs ID"
-	plainTextContent := "Hey" + user.Name + ",\n" + "Welcome to FyraLabs ID. Please click on the link below to verify your email!\n" + "https://id.fyralabs.com/verifyEmail?token=" + tokenString
-	message := mail.NewSingleEmail(from, subject, to, plainTextContent, "")
+	from := mail.NewEmail("FiraLabs Accounts", "noreply@fyralabs.com")
+	subject := "Verify Your FyraLabs Account"
+	message := mail.NewSingleEmail(from, subject, to, "", buf.String())
 
 	r, err := SendGridClient.Send(message)
 	if err != nil {

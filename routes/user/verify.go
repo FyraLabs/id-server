@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/fyralabs/id-server/config"
@@ -23,17 +24,23 @@ func RequestVerificationEmail(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
+type VerifyEmailBody struct {
+	Token string `json:"token" validate:"required"`
+}
+
 func VerifyEmail(c *fiber.Ctx) error {
-	tokenString := c.Query("token")
-	if tokenString != "" {
-		return c.Status(400).JSON(fiber.Map{
-			"message": "No token passed",
-		})
+	var verifyData VerifyEmailBody
+	if err := json.Unmarshal(c.Request().Body(), &verifyData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid JSON"})
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	if err := validate.Struct(verifyData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	token, err := jwt.Parse(verifyData.Token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return []byte(config.Environment.JwtKey), nil
