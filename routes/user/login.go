@@ -36,11 +36,11 @@ func Login(c *fiber.Ctx) error {
 		Only(c.Context())
 
 	if err != nil {
-		return err
-	}
+		if err.Error() == "ent: user not found" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User doesn't exist"})
+		}
 
-	if u == nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User doesn't exist"})
+		return err
 	}
 
 	valid, err := argon2.VerifyEncoded([]byte(userData.Password), []byte(u.Password))
