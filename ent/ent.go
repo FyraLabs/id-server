@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 )
 
@@ -30,8 +31,9 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		session.Table: session.ValidColumn,
-		user.Table:    user.ValidColumn,
+		session.Table:    session.ValidColumn,
+		totpmethod.Table: totpmethod.ValidColumn,
+		user.Table:       user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

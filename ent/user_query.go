@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fyralabs/id-server/ent/predicate"
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 	"github.com/google/uuid"
 )
@@ -28,7 +29,8 @@ type UserQuery struct {
 	fields     []string
 	predicates []predicate.User
 	// eager-loading edges.
-	withSessions *SessionQuery
+	withSessions    *SessionQuery
+	withTotpMethods *TOTPMethodQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -80,6 +82,28 @@ func (uq *UserQuery) QuerySessions() *SessionQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(session.Table, session.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.SessionsTable, user.SessionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTotpMethods chains the current query on the "totpMethods" edge.
+func (uq *UserQuery) QueryTotpMethods() *TOTPMethodQuery {
+	query := &TOTPMethodQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(totpmethod.Table, totpmethod.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TotpMethodsTable, user.TotpMethodsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -263,12 +287,13 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:       uq.config,
-		limit:        uq.limit,
-		offset:       uq.offset,
-		order:        append([]OrderFunc{}, uq.order...),
-		predicates:   append([]predicate.User{}, uq.predicates...),
-		withSessions: uq.withSessions.Clone(),
+		config:          uq.config,
+		limit:           uq.limit,
+		offset:          uq.offset,
+		order:           append([]OrderFunc{}, uq.order...),
+		predicates:      append([]predicate.User{}, uq.predicates...),
+		withSessions:    uq.withSessions.Clone(),
+		withTotpMethods: uq.withTotpMethods.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -284,6 +309,17 @@ func (uq *UserQuery) WithSessions(opts ...func(*SessionQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withSessions = query
+	return uq
+}
+
+// WithTotpMethods tells the query-builder to eager-load the nodes that are connected to
+// the "totpMethods" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithTotpMethods(opts ...func(*TOTPMethodQuery)) *UserQuery {
+	query := &TOTPMethodQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withTotpMethods = query
 	return uq
 }
 
@@ -352,8 +388,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			uq.withSessions != nil,
+			uq.withTotpMethods != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -402,6 +439,35 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "user_sessions" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Sessions = append(node.Edges.Sessions, n)
+		}
+	}
+
+	if query := uq.withTotpMethods; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.TotpMethods = []*TOTPMethod{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TOTPMethod(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.TotpMethodsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_totp_methods
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_totp_methods" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_totp_methods" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.TotpMethods = append(node.Edges.TotpMethods, n)
 		}
 	}
 

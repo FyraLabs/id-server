@@ -17,7 +17,10 @@ require (
 	github.com/sendgrid/sendgrid-go v3.11.1+incompatible
 )
 
-require github.com/oschwald/maxminddb-golang v1.9.0 // indirect
+require (
+	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
+	github.com/oschwald/maxminddb-golang v1.9.0 // indirect
+)
 
 require (
 	ariga.io/atlas v0.3.7-0.20220303204946-787354f533c3 // indirect
@@ -34,6 +37,7 @@ require (
 	github.com/mileusna/useragent v1.0.2
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/oschwald/geoip2-golang v1.7.0
+	github.com/pquerna/otp v1.3.0
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.34.0 // indirect

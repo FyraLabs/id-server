@@ -1,8 +1,9 @@
 package schema
 
 import (
-	"entgo.io/ent/schema/edge"
 	"time"
+
+	"entgo.io/ent/schema/edge"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
@@ -30,5 +31,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("sessions", Session.Type),
+		edge.To("totpMethods", TOTPMethod.Type),
 	}
 }

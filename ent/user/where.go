@@ -580,6 +580,34 @@ func HasSessionsWith(preds ...predicate.Session) predicate.User {
 	})
 }
 
+// HasTotpMethods applies the HasEdge predicate on the "totpMethods" edge.
+func HasTotpMethods() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TotpMethodsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TotpMethodsTable, TotpMethodsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTotpMethodsWith applies the HasEdge predicate on the "totpMethods" edge with a given conditions (other predicates).
+func HasTotpMethodsWith(preds ...predicate.TOTPMethod) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TotpMethodsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TotpMethodsTable, TotpMethodsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

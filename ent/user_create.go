@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 	"github.com/google/uuid"
 )
@@ -87,6 +88,21 @@ func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
 		ids[i] = s[i].ID
 	}
 	return uc.AddSessionIDs(ids...)
+}
+
+// AddTotpMethodIDs adds the "totpMethods" edge to the TOTPMethod entity by IDs.
+func (uc *UserCreate) AddTotpMethodIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddTotpMethodIDs(ids...)
+	return uc
+}
+
+// AddTotpMethods adds the "totpMethods" edges to the TOTPMethod entity.
+func (uc *UserCreate) AddTotpMethods(t ...*TOTPMethod) *UserCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uc.AddTotpMethodIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -274,6 +290,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: session.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.TotpMethodsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
 				},
 			},
 		}

@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -25,6 +26,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// TOTPMethod is the client for interacting with the TOTPMethod builders.
+	TOTPMethod *TOTPMethodClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -41,6 +44,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Session = NewSessionClient(c.config)
+	c.TOTPMethod = NewTOTPMethodClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -73,10 +77,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Session: NewSessionClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Session:    NewSessionClient(cfg),
+		TOTPMethod: NewTOTPMethodClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -94,10 +99,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Session: NewSessionClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Session:    NewSessionClient(cfg),
+		TOTPMethod: NewTOTPMethodClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -128,6 +134,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Session.Use(hooks...)
+	c.TOTPMethod.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -237,6 +244,112 @@ func (c *SessionClient) Hooks() []Hook {
 	return c.hooks.Session
 }
 
+// TOTPMethodClient is a client for the TOTPMethod schema.
+type TOTPMethodClient struct {
+	config
+}
+
+// NewTOTPMethodClient returns a client for the TOTPMethod from the given config.
+func NewTOTPMethodClient(c config) *TOTPMethodClient {
+	return &TOTPMethodClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `totpmethod.Hooks(f(g(h())))`.
+func (c *TOTPMethodClient) Use(hooks ...Hook) {
+	c.hooks.TOTPMethod = append(c.hooks.TOTPMethod, hooks...)
+}
+
+// Create returns a create builder for TOTPMethod.
+func (c *TOTPMethodClient) Create() *TOTPMethodCreate {
+	mutation := newTOTPMethodMutation(c.config, OpCreate)
+	return &TOTPMethodCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TOTPMethod entities.
+func (c *TOTPMethodClient) CreateBulk(builders ...*TOTPMethodCreate) *TOTPMethodCreateBulk {
+	return &TOTPMethodCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TOTPMethod.
+func (c *TOTPMethodClient) Update() *TOTPMethodUpdate {
+	mutation := newTOTPMethodMutation(c.config, OpUpdate)
+	return &TOTPMethodUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TOTPMethodClient) UpdateOne(tm *TOTPMethod) *TOTPMethodUpdateOne {
+	mutation := newTOTPMethodMutation(c.config, OpUpdateOne, withTOTPMethod(tm))
+	return &TOTPMethodUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TOTPMethodClient) UpdateOneID(id uuid.UUID) *TOTPMethodUpdateOne {
+	mutation := newTOTPMethodMutation(c.config, OpUpdateOne, withTOTPMethodID(id))
+	return &TOTPMethodUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TOTPMethod.
+func (c *TOTPMethodClient) Delete() *TOTPMethodDelete {
+	mutation := newTOTPMethodMutation(c.config, OpDelete)
+	return &TOTPMethodDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TOTPMethodClient) DeleteOne(tm *TOTPMethod) *TOTPMethodDeleteOne {
+	return c.DeleteOneID(tm.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TOTPMethodClient) DeleteOneID(id uuid.UUID) *TOTPMethodDeleteOne {
+	builder := c.Delete().Where(totpmethod.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TOTPMethodDeleteOne{builder}
+}
+
+// Query returns a query builder for TOTPMethod.
+func (c *TOTPMethodClient) Query() *TOTPMethodQuery {
+	return &TOTPMethodQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a TOTPMethod entity by its id.
+func (c *TOTPMethodClient) Get(ctx context.Context, id uuid.UUID) (*TOTPMethod, error) {
+	return c.Query().Where(totpmethod.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TOTPMethodClient) GetX(ctx context.Context, id uuid.UUID) *TOTPMethod {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a TOTPMethod.
+func (c *TOTPMethodClient) QueryUser(tm *TOTPMethod) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(totpmethod.Table, totpmethod.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, totpmethod.UserTable, totpmethod.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(tm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TOTPMethodClient) Hooks() []Hook {
+	return c.hooks.TOTPMethod
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -331,6 +444,22 @@ func (c *UserClient) QuerySessions(u *User) *SessionQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(session.Table, session.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.SessionsTable, user.SessionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTotpMethods queries the totpMethods edge of a User.
+func (c *UserClient) QueryTotpMethods(u *User) *TOTPMethodQuery {
+	query := &TOTPMethodQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(totpmethod.Table, totpmethod.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TotpMethodsTable, user.TotpMethodsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

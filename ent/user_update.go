@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/fyralabs/id-server/ent/predicate"
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 	"github.com/google/uuid"
 )
@@ -91,6 +92,21 @@ func (uu *UserUpdate) AddSessions(s ...*Session) *UserUpdate {
 	return uu.AddSessionIDs(ids...)
 }
 
+// AddTotpMethodIDs adds the "totpMethods" edge to the TOTPMethod entity by IDs.
+func (uu *UserUpdate) AddTotpMethodIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddTotpMethodIDs(ids...)
+	return uu
+}
+
+// AddTotpMethods adds the "totpMethods" edges to the TOTPMethod entity.
+func (uu *UserUpdate) AddTotpMethods(t ...*TOTPMethod) *UserUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uu.AddTotpMethodIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -115,6 +131,27 @@ func (uu *UserUpdate) RemoveSessions(s ...*Session) *UserUpdate {
 		ids[i] = s[i].ID
 	}
 	return uu.RemoveSessionIDs(ids...)
+}
+
+// ClearTotpMethods clears all "totpMethods" edges to the TOTPMethod entity.
+func (uu *UserUpdate) ClearTotpMethods() *UserUpdate {
+	uu.mutation.ClearTotpMethods()
+	return uu
+}
+
+// RemoveTotpMethodIDs removes the "totpMethods" edge to TOTPMethod entities by IDs.
+func (uu *UserUpdate) RemoveTotpMethodIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveTotpMethodIDs(ids...)
+	return uu
+}
+
+// RemoveTotpMethods removes "totpMethods" edges to TOTPMethod entities.
+func (uu *UserUpdate) RemoveTotpMethods(t ...*TOTPMethod) *UserUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uu.RemoveTotpMethodIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -278,6 +315,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.TotpMethodsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedTotpMethodsIDs(); len(nodes) > 0 && !uu.mutation.TotpMethodsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.TotpMethodsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -358,6 +449,21 @@ func (uuo *UserUpdateOne) AddSessions(s ...*Session) *UserUpdateOne {
 	return uuo.AddSessionIDs(ids...)
 }
 
+// AddTotpMethodIDs adds the "totpMethods" edge to the TOTPMethod entity by IDs.
+func (uuo *UserUpdateOne) AddTotpMethodIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddTotpMethodIDs(ids...)
+	return uuo
+}
+
+// AddTotpMethods adds the "totpMethods" edges to the TOTPMethod entity.
+func (uuo *UserUpdateOne) AddTotpMethods(t ...*TOTPMethod) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uuo.AddTotpMethodIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -382,6 +488,27 @@ func (uuo *UserUpdateOne) RemoveSessions(s ...*Session) *UserUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return uuo.RemoveSessionIDs(ids...)
+}
+
+// ClearTotpMethods clears all "totpMethods" edges to the TOTPMethod entity.
+func (uuo *UserUpdateOne) ClearTotpMethods() *UserUpdateOne {
+	uuo.mutation.ClearTotpMethods()
+	return uuo
+}
+
+// RemoveTotpMethodIDs removes the "totpMethods" edge to TOTPMethod entities by IDs.
+func (uuo *UserUpdateOne) RemoveTotpMethodIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveTotpMethodIDs(ids...)
+	return uuo
+}
+
+// RemoveTotpMethods removes "totpMethods" edges to TOTPMethod entities.
+func (uuo *UserUpdateOne) RemoveTotpMethods(t ...*TOTPMethod) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uuo.RemoveTotpMethodIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -561,6 +688,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: session.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.TotpMethodsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedTotpMethodsIDs(); len(nodes) > 0 && !uuo.mutation.TotpMethodsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.TotpMethodsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TotpMethodsTable,
+			Columns: []string{user.TotpMethodsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: totpmethod.FieldID,
 				},
 			},
 		}

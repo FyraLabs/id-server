@@ -7,6 +7,7 @@ import (
 
 	"github.com/fyralabs/id-server/ent/schema"
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 )
 
@@ -20,6 +21,12 @@ func init() {
 	sessionDescCreatedAt := sessionFields[3].Descriptor()
 	// session.DefaultCreatedAt holds the default value on creation for the createdAt field.
 	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
+	totpmethodFields := schema.TOTPMethod{}.Fields()
+	_ = totpmethodFields
+	// totpmethodDescCreatedAt is the schema descriptor for createdAt field.
+	totpmethodDescCreatedAt := totpmethodFields[2].Descriptor()
+	// totpmethod.DefaultCreatedAt holds the default value on creation for the createdAt field.
+	totpmethod.DefaultCreatedAt = totpmethodDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for createdAt field.

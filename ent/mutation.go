@@ -11,6 +11,7 @@ import (
 
 	"github.com/fyralabs/id-server/ent/predicate"
 	"github.com/fyralabs/id-server/ent/session"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/fyralabs/id-server/ent/user"
 	"github.com/google/uuid"
 
@@ -26,8 +27,9 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeSession = "Session"
-	TypeUser    = "User"
+	TypeSession    = "Session"
+	TypeTOTPMethod = "TOTPMethod"
+	TypeUser       = "User"
 )
 
 // SessionMutation represents an operation that mutates the Session nodes in the graph.
@@ -600,24 +602,543 @@ func (m *SessionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Session edge %s", name)
 }
 
+// TOTPMethodMutation represents an operation that mutates the TOTPMethod nodes in the graph.
+type TOTPMethodMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	secret        *string
+	createdAt     *time.Time
+	lastUsedAt    *time.Time
+	clearedFields map[string]struct{}
+	user          *uuid.UUID
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*TOTPMethod, error)
+	predicates    []predicate.TOTPMethod
+}
+
+var _ ent.Mutation = (*TOTPMethodMutation)(nil)
+
+// totpmethodOption allows management of the mutation configuration using functional options.
+type totpmethodOption func(*TOTPMethodMutation)
+
+// newTOTPMethodMutation creates new mutation for the TOTPMethod entity.
+func newTOTPMethodMutation(c config, op Op, opts ...totpmethodOption) *TOTPMethodMutation {
+	m := &TOTPMethodMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTOTPMethod,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTOTPMethodID sets the ID field of the mutation.
+func withTOTPMethodID(id uuid.UUID) totpmethodOption {
+	return func(m *TOTPMethodMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TOTPMethod
+		)
+		m.oldValue = func(ctx context.Context) (*TOTPMethod, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TOTPMethod.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTOTPMethod sets the old TOTPMethod of the mutation.
+func withTOTPMethod(node *TOTPMethod) totpmethodOption {
+	return func(m *TOTPMethodMutation) {
+		m.oldValue = func(context.Context) (*TOTPMethod, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TOTPMethodMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TOTPMethodMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TOTPMethod entities.
+func (m *TOTPMethodMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TOTPMethodMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TOTPMethodMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TOTPMethod.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetSecret sets the "secret" field.
+func (m *TOTPMethodMutation) SetSecret(s string) {
+	m.secret = &s
+}
+
+// Secret returns the value of the "secret" field in the mutation.
+func (m *TOTPMethodMutation) Secret() (r string, exists bool) {
+	v := m.secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSecret returns the old "secret" field's value of the TOTPMethod entity.
+// If the TOTPMethod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TOTPMethodMutation) OldSecret(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSecret: %w", err)
+	}
+	return oldValue.Secret, nil
+}
+
+// ResetSecret resets all changes to the "secret" field.
+func (m *TOTPMethodMutation) ResetSecret() {
+	m.secret = nil
+}
+
+// SetCreatedAt sets the "createdAt" field.
+func (m *TOTPMethodMutation) SetCreatedAt(t time.Time) {
+	m.createdAt = &t
+}
+
+// CreatedAt returns the value of the "createdAt" field in the mutation.
+func (m *TOTPMethodMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.createdAt
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "createdAt" field's value of the TOTPMethod entity.
+// If the TOTPMethod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TOTPMethodMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "createdAt" field.
+func (m *TOTPMethodMutation) ResetCreatedAt() {
+	m.createdAt = nil
+}
+
+// SetLastUsedAt sets the "lastUsedAt" field.
+func (m *TOTPMethodMutation) SetLastUsedAt(t time.Time) {
+	m.lastUsedAt = &t
+}
+
+// LastUsedAt returns the value of the "lastUsedAt" field in the mutation.
+func (m *TOTPMethodMutation) LastUsedAt() (r time.Time, exists bool) {
+	v := m.lastUsedAt
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsedAt returns the old "lastUsedAt" field's value of the TOTPMethod entity.
+// If the TOTPMethod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TOTPMethodMutation) OldLastUsedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsedAt: %w", err)
+	}
+	return oldValue.LastUsedAt, nil
+}
+
+// ClearLastUsedAt clears the value of the "lastUsedAt" field.
+func (m *TOTPMethodMutation) ClearLastUsedAt() {
+	m.lastUsedAt = nil
+	m.clearedFields[totpmethod.FieldLastUsedAt] = struct{}{}
+}
+
+// LastUsedAtCleared returns if the "lastUsedAt" field was cleared in this mutation.
+func (m *TOTPMethodMutation) LastUsedAtCleared() bool {
+	_, ok := m.clearedFields[totpmethod.FieldLastUsedAt]
+	return ok
+}
+
+// ResetLastUsedAt resets all changes to the "lastUsedAt" field.
+func (m *TOTPMethodMutation) ResetLastUsedAt() {
+	m.lastUsedAt = nil
+	delete(m.clearedFields, totpmethod.FieldLastUsedAt)
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *TOTPMethodMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *TOTPMethodMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *TOTPMethodMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *TOTPMethodMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *TOTPMethodMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *TOTPMethodMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the TOTPMethodMutation builder.
+func (m *TOTPMethodMutation) Where(ps ...predicate.TOTPMethod) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *TOTPMethodMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (TOTPMethod).
+func (m *TOTPMethodMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TOTPMethodMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.secret != nil {
+		fields = append(fields, totpmethod.FieldSecret)
+	}
+	if m.createdAt != nil {
+		fields = append(fields, totpmethod.FieldCreatedAt)
+	}
+	if m.lastUsedAt != nil {
+		fields = append(fields, totpmethod.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TOTPMethodMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case totpmethod.FieldSecret:
+		return m.Secret()
+	case totpmethod.FieldCreatedAt:
+		return m.CreatedAt()
+	case totpmethod.FieldLastUsedAt:
+		return m.LastUsedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TOTPMethodMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case totpmethod.FieldSecret:
+		return m.OldSecret(ctx)
+	case totpmethod.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case totpmethod.FieldLastUsedAt:
+		return m.OldLastUsedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TOTPMethod field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TOTPMethodMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case totpmethod.FieldSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSecret(v)
+		return nil
+	case totpmethod.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case totpmethod.FieldLastUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TOTPMethod field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TOTPMethodMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TOTPMethodMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TOTPMethodMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TOTPMethod numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TOTPMethodMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(totpmethod.FieldLastUsedAt) {
+		fields = append(fields, totpmethod.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TOTPMethodMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TOTPMethodMutation) ClearField(name string) error {
+	switch name {
+	case totpmethod.FieldLastUsedAt:
+		m.ClearLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TOTPMethod nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TOTPMethodMutation) ResetField(name string) error {
+	switch name {
+	case totpmethod.FieldSecret:
+		m.ResetSecret()
+		return nil
+	case totpmethod.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case totpmethod.FieldLastUsedAt:
+		m.ResetLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TOTPMethod field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TOTPMethodMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, totpmethod.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TOTPMethodMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case totpmethod.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TOTPMethodMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TOTPMethodMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TOTPMethodMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, totpmethod.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TOTPMethodMutation) EdgeCleared(name string) bool {
+	switch name {
+	case totpmethod.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TOTPMethodMutation) ClearEdge(name string) error {
+	switch name {
+	case totpmethod.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown TOTPMethod unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TOTPMethodMutation) ResetEdge(name string) error {
+	switch name {
+	case totpmethod.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown TOTPMethod edge %s", name)
+}
+
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	name            *string
-	email           *string
-	password        *string
-	createdAt       *time.Time
-	emailVerified   *bool
-	clearedFields   map[string]struct{}
-	sessions        map[uuid.UUID]struct{}
-	removedsessions map[uuid.UUID]struct{}
-	clearedsessions bool
-	done            bool
-	oldValue        func(context.Context) (*User, error)
-	predicates      []predicate.User
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	name               *string
+	email              *string
+	password           *string
+	createdAt          *time.Time
+	emailVerified      *bool
+	clearedFields      map[string]struct{}
+	sessions           map[uuid.UUID]struct{}
+	removedsessions    map[uuid.UUID]struct{}
+	clearedsessions    bool
+	totpMethods        map[uuid.UUID]struct{}
+	removedtotpMethods map[uuid.UUID]struct{}
+	clearedtotpMethods bool
+	done               bool
+	oldValue           func(context.Context) (*User, error)
+	predicates         []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -958,6 +1479,60 @@ func (m *UserMutation) ResetSessions() {
 	m.removedsessions = nil
 }
 
+// AddTotpMethodIDs adds the "totpMethods" edge to the TOTPMethod entity by ids.
+func (m *UserMutation) AddTotpMethodIDs(ids ...uuid.UUID) {
+	if m.totpMethods == nil {
+		m.totpMethods = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.totpMethods[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTotpMethods clears the "totpMethods" edge to the TOTPMethod entity.
+func (m *UserMutation) ClearTotpMethods() {
+	m.clearedtotpMethods = true
+}
+
+// TotpMethodsCleared reports if the "totpMethods" edge to the TOTPMethod entity was cleared.
+func (m *UserMutation) TotpMethodsCleared() bool {
+	return m.clearedtotpMethods
+}
+
+// RemoveTotpMethodIDs removes the "totpMethods" edge to the TOTPMethod entity by IDs.
+func (m *UserMutation) RemoveTotpMethodIDs(ids ...uuid.UUID) {
+	if m.removedtotpMethods == nil {
+		m.removedtotpMethods = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.totpMethods, ids[i])
+		m.removedtotpMethods[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTotpMethods returns the removed IDs of the "totpMethods" edge to the TOTPMethod entity.
+func (m *UserMutation) RemovedTotpMethodsIDs() (ids []uuid.UUID) {
+	for id := range m.removedtotpMethods {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TotpMethodsIDs returns the "totpMethods" edge IDs in the mutation.
+func (m *UserMutation) TotpMethodsIDs() (ids []uuid.UUID) {
+	for id := range m.totpMethods {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTotpMethods resets all changes to the "totpMethods" edge.
+func (m *UserMutation) ResetTotpMethods() {
+	m.totpMethods = nil
+	m.clearedtotpMethods = false
+	m.removedtotpMethods = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1144,9 +1719,12 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.sessions != nil {
 		edges = append(edges, user.EdgeSessions)
+	}
+	if m.totpMethods != nil {
+		edges = append(edges, user.EdgeTotpMethods)
 	}
 	return edges
 }
@@ -1161,15 +1739,24 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeTotpMethods:
+		ids := make([]ent.Value, 0, len(m.totpMethods))
+		for id := range m.totpMethods {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedsessions != nil {
 		edges = append(edges, user.EdgeSessions)
+	}
+	if m.removedtotpMethods != nil {
+		edges = append(edges, user.EdgeTotpMethods)
 	}
 	return edges
 }
@@ -1184,15 +1771,24 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeTotpMethods:
+		ids := make([]ent.Value, 0, len(m.removedtotpMethods))
+		for id := range m.removedtotpMethods {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedsessions {
 		edges = append(edges, user.EdgeSessions)
+	}
+	if m.clearedtotpMethods {
+		edges = append(edges, user.EdgeTotpMethods)
 	}
 	return edges
 }
@@ -1203,6 +1799,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeSessions:
 		return m.clearedsessions
+	case user.EdgeTotpMethods:
+		return m.clearedtotpMethods
 	}
 	return false
 }
@@ -1221,6 +1819,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeSessions:
 		m.ResetSessions()
+		return nil
+	case user.EdgeTotpMethods:
+		m.ResetTotpMethods()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

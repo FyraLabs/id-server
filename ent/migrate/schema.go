@@ -31,6 +31,28 @@ var (
 			},
 		},
 	}
+	// TotpMethodsColumns holds the columns for the "totp_methods" table.
+	TotpMethodsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "secret", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "user_totp_methods", Type: field.TypeUUID, Nullable: true},
+	}
+	// TotpMethodsTable holds the schema information for the "totp_methods" table.
+	TotpMethodsTable = &schema.Table{
+		Name:       "totp_methods",
+		Columns:    TotpMethodsColumns,
+		PrimaryKey: []*schema.Column{TotpMethodsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "totp_methods_users_totpMethods",
+				Columns:    []*schema.Column{TotpMethodsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -49,10 +71,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		SessionsTable,
+		TotpMethodsTable,
 		UsersTable,
 	}
 )
 
 func init() {
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	TotpMethodsTable.ForeignKeys[0].RefTable = UsersTable
 }

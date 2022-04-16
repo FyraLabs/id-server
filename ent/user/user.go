@@ -23,6 +23,8 @@ const (
 	FieldEmailVerified = "email_verified"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
 	EdgeSessions = "sessions"
+	// EdgeTotpMethods holds the string denoting the totpmethods edge name in mutations.
+	EdgeTotpMethods = "totpMethods"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SessionsTable is the table that holds the sessions relation/edge.
@@ -32,6 +34,13 @@ const (
 	SessionsInverseTable = "sessions"
 	// SessionsColumn is the table column denoting the sessions relation/edge.
 	SessionsColumn = "user_sessions"
+	// TotpMethodsTable is the table that holds the totpMethods relation/edge.
+	TotpMethodsTable = "totp_methods"
+	// TotpMethodsInverseTable is the table name for the TOTPMethod entity.
+	// It exists in this package in order to avoid circular dependency with the "totpmethod" package.
+	TotpMethodsInverseTable = "totp_methods"
+	// TotpMethodsColumn is the table column denoting the totpMethods relation/edge.
+	TotpMethodsColumn = "user_totp_methods"
 )
 
 // Columns holds all SQL columns for user fields.

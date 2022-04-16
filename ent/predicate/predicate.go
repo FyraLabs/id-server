@@ -9,5 +9,8 @@ import (
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 
+// TOTPMethod is the predicate function for totpmethod builders.
+type TOTPMethod func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
