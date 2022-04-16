@@ -56,6 +56,12 @@ func (tmc *TOTPMethodCreate) SetNillableLastUsedAt(t *time.Time) *TOTPMethodCrea
 	return tmc
 }
 
+// SetName sets the "name" field.
+func (tmc *TOTPMethodCreate) SetName(s string) *TOTPMethodCreate {
+	tmc.mutation.SetName(s)
+	return tmc
+}
+
 // SetID sets the "id" field.
 func (tmc *TOTPMethodCreate) SetID(u uuid.UUID) *TOTPMethodCreate {
 	tmc.mutation.SetID(u)
@@ -166,6 +172,9 @@ func (tmc *TOTPMethodCreate) check() error {
 	if _, ok := tmc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "TOTPMethod.createdAt"`)}
 	}
+	if _, ok := tmc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "TOTPMethod.name"`)}
+	}
 	return nil
 }
 
@@ -225,6 +234,14 @@ func (tmc *TOTPMethodCreate) createSpec() (*TOTPMethod, *sqlgraph.CreateSpec) {
 			Column: totpmethod.FieldLastUsedAt,
 		})
 		_node.LastUsedAt = value
+	}
+	if value, ok := tmc.mutation.Name(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: totpmethod.FieldName,
+		})
+		_node.Name = value
 	}
 	if nodes := tmc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

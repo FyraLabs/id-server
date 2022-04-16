@@ -70,6 +70,12 @@ func (tmu *TOTPMethodUpdate) ClearLastUsedAt() *TOTPMethodUpdate {
 	return tmu
 }
 
+// SetName sets the "name" field.
+func (tmu *TOTPMethodUpdate) SetName(s string) *TOTPMethodUpdate {
+	tmu.mutation.SetName(s)
+	return tmu
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (tmu *TOTPMethodUpdate) SetUserID(id uuid.UUID) *TOTPMethodUpdate {
 	tmu.mutation.SetUserID(id)
@@ -199,6 +205,13 @@ func (tmu *TOTPMethodUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: totpmethod.FieldLastUsedAt,
 		})
 	}
+	if value, ok := tmu.mutation.Name(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: totpmethod.FieldName,
+		})
+	}
 	if tmu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -290,6 +303,12 @@ func (tmuo *TOTPMethodUpdateOne) SetNillableLastUsedAt(t *time.Time) *TOTPMethod
 // ClearLastUsedAt clears the value of the "lastUsedAt" field.
 func (tmuo *TOTPMethodUpdateOne) ClearLastUsedAt() *TOTPMethodUpdateOne {
 	tmuo.mutation.ClearLastUsedAt()
+	return tmuo
+}
+
+// SetName sets the "name" field.
+func (tmuo *TOTPMethodUpdateOne) SetName(s string) *TOTPMethodUpdateOne {
+	tmuo.mutation.SetName(s)
 	return tmuo
 }
 
@@ -444,6 +463,13 @@ func (tmuo *TOTPMethodUpdateOne) sqlSave(ctx context.Context) (_node *TOTPMethod
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Column: totpmethod.FieldLastUsedAt,
+		})
+	}
+	if value, ok := tmuo.mutation.Name(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: totpmethod.FieldName,
 		})
 	}
 	if tmuo.mutation.UserCleared() {

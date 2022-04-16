@@ -17,6 +17,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldLastUsedAt holds the string denoting the lastusedat field in the database.
 	FieldLastUsedAt = "last_used_at"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the totpmethod in the database.
@@ -36,6 +38,7 @@ var Columns = []string{
 	FieldSecret,
 	FieldCreatedAt,
 	FieldLastUsedAt,
+	FieldName,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "totp_methods"

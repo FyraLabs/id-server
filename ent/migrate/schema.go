@@ -37,6 +37,7 @@ var (
 		{Name: "secret", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "name", Type: field.TypeString},
 		{Name: "user_totp_methods", Type: field.TypeUUID, Nullable: true},
 	}
 	// TotpMethodsTable holds the schema information for the "totp_methods" table.
@@ -47,7 +48,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "totp_methods_users_totpMethods",
-				Columns:    []*schema.Column{TotpMethodsColumns[4]},
+				Columns:    []*schema.Column{TotpMethodsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

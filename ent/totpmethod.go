@@ -24,6 +24,8 @@ type TOTPMethod struct {
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// LastUsedAt holds the value of the "lastUsedAt" field.
 	LastUsedAt time.Time `json:"lastUsedAt,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TOTPMethodQuery when eager-loading is set.
 	Edges             TOTPMethodEdges `json:"edges"`
@@ -58,7 +60,7 @@ func (*TOTPMethod) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case totpmethod.FieldSecret:
+		case totpmethod.FieldSecret, totpmethod.FieldName:
 			values[i] = new(sql.NullString)
 		case totpmethod.FieldCreatedAt, totpmethod.FieldLastUsedAt:
 			values[i] = new(sql.NullTime)
@@ -104,6 +106,12 @@ func (tm *TOTPMethod) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field lastUsedAt", values[i])
 			} else if value.Valid {
 				tm.LastUsedAt = value.Time
+			}
+		case totpmethod.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				tm.Name = value.String
 			}
 		case totpmethod.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -151,6 +159,8 @@ func (tm *TOTPMethod) String() string {
 	builder.WriteString(tm.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", lastUsedAt=")
 	builder.WriteString(tm.LastUsedAt.Format(time.ANSIC))
+	builder.WriteString(", name=")
+	builder.WriteString(tm.Name)
 	builder.WriteByte(')')
 	return builder.String()
 }

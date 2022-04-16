@@ -611,6 +611,7 @@ type TOTPMethodMutation struct {
 	secret        *string
 	createdAt     *time.Time
 	lastUsedAt    *time.Time
+	name          *string
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -844,6 +845,42 @@ func (m *TOTPMethodMutation) ResetLastUsedAt() {
 	delete(m.clearedFields, totpmethod.FieldLastUsedAt)
 }
 
+// SetName sets the "name" field.
+func (m *TOTPMethodMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *TOTPMethodMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the TOTPMethod entity.
+// If the TOTPMethod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TOTPMethodMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *TOTPMethodMutation) ResetName() {
+	m.name = nil
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *TOTPMethodMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
@@ -902,7 +939,7 @@ func (m *TOTPMethodMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TOTPMethodMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.secret != nil {
 		fields = append(fields, totpmethod.FieldSecret)
 	}
@@ -911,6 +948,9 @@ func (m *TOTPMethodMutation) Fields() []string {
 	}
 	if m.lastUsedAt != nil {
 		fields = append(fields, totpmethod.FieldLastUsedAt)
+	}
+	if m.name != nil {
+		fields = append(fields, totpmethod.FieldName)
 	}
 	return fields
 }
@@ -926,6 +966,8 @@ func (m *TOTPMethodMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case totpmethod.FieldLastUsedAt:
 		return m.LastUsedAt()
+	case totpmethod.FieldName:
+		return m.Name()
 	}
 	return nil, false
 }
@@ -941,6 +983,8 @@ func (m *TOTPMethodMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldCreatedAt(ctx)
 	case totpmethod.FieldLastUsedAt:
 		return m.OldLastUsedAt(ctx)
+	case totpmethod.FieldName:
+		return m.OldName(ctx)
 	}
 	return nil, fmt.Errorf("unknown TOTPMethod field %s", name)
 }
@@ -970,6 +1014,13 @@ func (m *TOTPMethodMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastUsedAt(v)
+		return nil
+	case totpmethod.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
 		return nil
 	}
 	return fmt.Errorf("unknown TOTPMethod field %s", name)
@@ -1037,6 +1088,9 @@ func (m *TOTPMethodMutation) ResetField(name string) error {
 		return nil
 	case totpmethod.FieldLastUsedAt:
 		m.ResetLastUsedAt()
+		return nil
+	case totpmethod.FieldName:
+		m.ResetName()
 		return nil
 	}
 	return fmt.Errorf("unknown TOTPMethod field %s", name)

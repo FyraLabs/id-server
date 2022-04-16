@@ -7,6 +7,7 @@ import (
 	"github.com/fyralabs/id-server/ent"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pquerna/otp/totp"
+	"github.com/samber/lo"
 )
 
 type AddMethodData struct {
@@ -21,6 +22,32 @@ type TOTPData struct {
 }
 
 // var base32 = regexp.MustCompile("^[A-Z2-7]*$")
+
+type GenericMethodResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+func GetMethods(c *fiber.Ctx) error {
+	user := c.Locals("user").(*ent.User)
+
+	totpMethods, err := user.QueryTotpMethods().All(c.Context())
+
+	if err != nil {
+		return err
+	}
+
+	res := lo.Map(totpMethods, func(s *ent.TOTPMethod, _ int) GenericMethodResponse {
+		return GenericMethodResponse{
+			ID:   s.ID.String(),
+			Type: "totp",
+			Name: s.Name,
+		}
+	})
+
+	return c.JSON(res)
+}
 
 func AddMethod(c *fiber.Ctx) error {
 	user := c.Locals("user").(*ent.User)

@@ -21,6 +21,7 @@ func (TOTPMethod) Fields() []ent.Field {
 		field.String("secret"),
 		field.Time("createdAt").Default(time.Now),
 		field.Time("lastUsedAt").Optional(),
+		field.String("name"),
 	}
 }
 
