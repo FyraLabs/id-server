@@ -2,31 +2,35 @@ package user
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/ent"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/pquerna/otp/totp"
 	"github.com/samber/lo"
 )
 
 type AddMethodData struct {
 	Method string          `json:"method" validate:"required,oneof='totp'"`
+	Name   string          `json:"name" validate:"required,min=1,max=256"`
 	Data   json.RawMessage `json:"data" validate:"required"`
 }
 
 type TOTPData struct {
 	// TODO: Maybe check if this is base32
 	Secret string `json:"secret" validate:"required"`
-	Code   string `json:"method" validate:"required,len=6,number"`
+	Code   string `json:"code" validate:"required,len=6,number"`
 }
 
 // var base32 = regexp.MustCompile("^[A-Z2-7]*$")
-
 type GenericMethodResponse struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	Type       string    `json:"type"`
+	CreatedAt  time.Time `json:"created_at"`
+	LastUsedAt time.Time `json:"updated_at"`
 }
 
 func GetMethods(c *fiber.Ctx) error {
@@ -40,9 +44,11 @@ func GetMethods(c *fiber.Ctx) error {
 
 	res := lo.Map(totpMethods, func(s *ent.TOTPMethod, _ int) GenericMethodResponse {
 		return GenericMethodResponse{
-			ID:   s.ID.String(),
-			Type: "totp",
-			Name: s.Name,
+			ID:         s.ID.String(),
+			Type:       "totp",
+			Name:       s.Name,
+			CreatedAt:  s.CreatedAt,
+			LastUsedAt: s.LastUsedAt,
 		}
 	})
 
@@ -66,7 +72,7 @@ func AddMethod(c *fiber.Ctx) error {
 	case "totp":
 		{
 			var methodParams TOTPData
-			if err := json.Unmarshal(body, &methodParams); err != nil {
+			if err := json.Unmarshal(methodData.Data, &methodParams); err != nil {
 				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid JSON"})
 			}
 
@@ -80,7 +86,9 @@ func AddMethod(c *fiber.Ctx) error {
 
 			m, err := database.DatabaseClient.TOTPMethod.
 				Create().
+				SetID(uuid.New()).
 				SetUserID(user.ID).
+				SetName(methodData.Name).
 				SetSecret(methodParams.Secret).
 				Save(c.Context())
 
