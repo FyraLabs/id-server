@@ -193,6 +193,11 @@ func Login2FA(c *fiber.Ctx) error {
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Invalid code"})
 			}
 
+			_, err = totpMethod.Update().SetLastUsedAt(time.Now()).Save(c.Context())
+			if err != nil {
+				return err
+			}
+
 			userAgent, ok := c.GetReqHeaders()["User-Agent"]
 			if !ok {
 				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "User-Agent header not found"})

@@ -21,7 +21,7 @@ func (Session) Fields() []ent.Field {
 		field.String("ip"),
 		field.String("userAgent"),
 		field.Time("createdAt").Default(time.Now),
-		field.Time("lastUsedAt").Optional(),
+		field.Time("lastUsedAt").Optional().Nillable(),
 	}
 }
 

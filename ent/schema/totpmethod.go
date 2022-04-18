@@ -20,7 +20,7 @@ func (TOTPMethod) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Unique(),
 		field.String("secret"),
 		field.Time("createdAt").Default(time.Now),
-		field.Time("lastUsedAt").Optional(),
+		field.Time("lastUsedAt").Optional().Nillable(),
 		field.String("name"),
 	}
 }

@@ -241,7 +241,7 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: session.FieldLastUsedAt,
 		})
-		_node.LastUsedAt = value
+		_node.LastUsedAt = &value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

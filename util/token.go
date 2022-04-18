@@ -48,6 +48,7 @@ func DecodeJWT(tokenString string, tokenType string) (jwt.MapClaims, error) {
 func CreateSession(userID uuid.UUID, userAgent string, ip string, context context.Context) (string, error) {
 	s, err := database.DatabaseClient.Session.
 		Create().
+		SetNillableLastUsedAt(nil).
 		SetID(uuid.New()).
 		SetUserID(userID).
 		SetIP(ip).

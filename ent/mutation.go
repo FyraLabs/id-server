@@ -279,7 +279,7 @@ func (m *SessionMutation) LastUsedAt() (r time.Time, exists bool) {
 // OldLastUsedAt returns the old "lastUsedAt" field's value of the Session entity.
 // If the Session object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SessionMutation) OldLastUsedAt(ctx context.Context) (v time.Time, err error) {
+func (m *SessionMutation) OldLastUsedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldLastUsedAt is only allowed on UpdateOne operations")
 	}
@@ -813,7 +813,7 @@ func (m *TOTPMethodMutation) LastUsedAt() (r time.Time, exists bool) {
 // OldLastUsedAt returns the old "lastUsedAt" field's value of the TOTPMethod entity.
 // If the TOTPMethod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TOTPMethodMutation) OldLastUsedAt(ctx context.Context) (v time.Time, err error) {
+func (m *TOTPMethodMutation) OldLastUsedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldLastUsedAt is only allowed on UpdateOne operations")
 	}

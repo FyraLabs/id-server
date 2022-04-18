@@ -25,7 +25,7 @@ type Session struct {
 	// CreatedAt holds the value of the "createdAt" field.
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// LastUsedAt holds the value of the "lastUsedAt" field.
-	LastUsedAt time.Time `json:"lastUsedAt,omitempty"`
+	LastUsedAt *time.Time `json:"lastUsedAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SessionQuery when eager-loading is set.
 	Edges         SessionEdges `json:"edges"`
@@ -111,7 +111,8 @@ func (s *Session) assignValues(columns []string, values []interface{}) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field lastUsedAt", values[i])
 			} else if value.Valid {
-				s.LastUsedAt = value.Time
+				s.LastUsedAt = new(time.Time)
+				*s.LastUsedAt = value.Time
 			}
 		case session.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -159,8 +160,10 @@ func (s *Session) String() string {
 	builder.WriteString(s.UserAgent)
 	builder.WriteString(", createdAt=")
 	builder.WriteString(s.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", lastUsedAt=")
-	builder.WriteString(s.LastUsedAt.Format(time.ANSIC))
+	if v := s.LastUsedAt; v != nil {
+		builder.WriteString(", lastUsedAt=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

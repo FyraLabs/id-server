@@ -26,5 +26,5 @@ func Register(app *fiber.App) {
 	meGroup.Delete("/session/:id", user.RevokeSession)
 	meGroup.Get("/2fa", user.GetMethods)
 	meGroup.Post("/2fa", user.AddMethod)
-	// meGroup.Delete("/2fa/:id", user.RemoveMethod)
+	meGroup.Delete("/2fa/:id", user.RemoveMethod)
 }

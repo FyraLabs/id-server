@@ -233,7 +233,7 @@ func (tmc *TOTPMethodCreate) createSpec() (*TOTPMethod, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: totpmethod.FieldLastUsedAt,
 		})
-		_node.LastUsedAt = value
+		_node.LastUsedAt = &value
 	}
 	if value, ok := tmc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

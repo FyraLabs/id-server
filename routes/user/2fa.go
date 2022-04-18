@@ -6,6 +6,7 @@ import (
 
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/ent"
+	"github.com/fyralabs/id-server/ent/totpmethod"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/pquerna/otp/totp"
@@ -26,11 +27,11 @@ type TOTPData struct {
 
 // var base32 = regexp.MustCompile("^[A-Z2-7]*$")
 type GenericMethodResponse struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	Type       string    `json:"type"`
-	CreatedAt  time.Time `json:"created_at"`
-	LastUsedAt time.Time `json:"updated_at"`
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	Type       string     `json:"type"`
+	CreatedAt  time.Time  `json:"createdAt"`
+	LastUsedAt *time.Time `json:"lastUsedAt"`
 }
 
 func GetMethods(c *fiber.Ctx) error {
@@ -53,6 +54,32 @@ func GetMethods(c *fiber.Ctx) error {
 	})
 
 	return c.JSON(res)
+}
+
+func RemoveMethod(c *fiber.Ctx) error {
+	user := c.Locals("user").(*ent.User)
+
+	methodIdString := c.Params("id")
+
+	methodId, err := uuid.Parse(methodIdString)
+	if err != nil {
+		return err
+	}
+
+	existsTotp, err := user.QueryTotpMethods().Where(totpmethod.ID(methodId)).Exist(c.Context())
+	if err != nil {
+		return err
+	}
+
+	if existsTotp {
+		if err := database.DatabaseClient.TOTPMethod.DeleteOneID(methodId).Exec(c.Context()); err != nil {
+			return err
+		}
+
+		return c.SendStatus(fiber.StatusOK)
+	}
+
+	return c.SendStatus(fiber.StatusNotFound)
 }
 
 func AddMethod(c *fiber.Ctx) error {
