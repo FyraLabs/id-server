@@ -114,7 +114,7 @@ func Login(c *fiber.Ctx) error {
 type Login2FAParams struct {
 	Token    string          `json:"token" validate:"required,jwt"`
 	Method   string          `json:"method" validate:"required,oneof='totp'"`
-	MethodID string          `json:"method_id" validate:"required,uuid"`
+	MethodID string          `json:"methodID" validate:"required,uuid"`
 	Data     json.RawMessage `json:"data" validate:"required"`
 }
 

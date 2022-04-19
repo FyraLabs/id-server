@@ -13,6 +13,7 @@ func Register(app *fiber.App) {
 	userGroup := app.Group("/user")
 	userGroup.Post("/register", user.Register)
 	userGroup.Post("/login", user.Login)
+	userGroup.Post("/login/2fa", user.Login2FA)
 	userGroup.Post("/verifyEmail", user.VerifyEmail)
 
 	meGroup := userGroup.Group("/me")
