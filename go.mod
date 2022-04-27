@@ -19,7 +19,12 @@ require (
 
 require (
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
+	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/oschwald/maxminddb-golang v1.9.0 // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
+	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558 // indirect
+	google.golang.org/appengine v1.6.6 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 )
 
 require (
@@ -36,6 +41,7 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mileusna/useragent v1.0.2
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+	github.com/ory/hydra-client-go v1.11.7
 	github.com/oschwald/geoip2-golang v1.7.0
 	github.com/pquerna/otp v1.3.0
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
