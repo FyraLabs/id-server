@@ -28,4 +28,9 @@ func Register(app *fiber.App) {
 	meGroup.Get("/2fa", user.GetMethods)
 	meGroup.Post("/2fa", user.AddMethod)
 	meGroup.Delete("/2fa/:id", user.RemoveMethod)
+
+	oidcGroup := userGroup.Group("/oidc")
+	oidcGroup.Post("/logout", user.OIDCLogout)
+	oidcGroup.Use(middleware.Auth)
+	oidcGroup.Post("/login", user.OIDCLogin)
 }
