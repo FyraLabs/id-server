@@ -27,6 +27,8 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// EmailVerified holds the value of the "emailVerified" field.
 	EmailVerified bool `json:"emailVerified,omitempty"`
+	// AvatarURL holds the value of the "avatarURL" field.
+	AvatarURL *string `json:"avatarURL,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -68,7 +70,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
-		case user.FieldName, user.FieldEmail, user.FieldPassword:
+		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldAvatarURL:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -125,6 +127,13 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.EmailVerified = value.Bool
 			}
+		case user.FieldAvatarURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field avatarURL", values[i])
+			} else if value.Valid {
+				u.AvatarURL = new(string)
+				*u.AvatarURL = value.String
+			}
 		}
 	}
 	return nil
@@ -173,6 +182,10 @@ func (u *User) String() string {
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", emailVerified=")
 	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))
+	if v := u.AvatarURL; v != nil {
+		builder.WriteString(", avatarURL=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

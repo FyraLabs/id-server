@@ -13,5 +13,6 @@ func GetMe(c *fiber.Ctx) error {
 		"email":         user.Email,
 		"name":          user.Name,
 		"emailVerified": user.EmailVerified,
+		"avatarURL":     user.AvatarURL,
 	})
 }

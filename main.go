@@ -10,23 +10,25 @@ import (
 )
 
 func main() {
-	err := config.InitializeEnv()
-	if err != nil {
+	if err := config.InitializeEnv(); err != nil {
+		panic(err.Error())
+	}
+
+	if err := util.InitializeS3(); err != nil {
 		panic(err.Error())
 	}
 
 	util.InitializeSendGrid()
 
-	err = util.InitializeGeoIP()
-	if err != nil {
+	if err := util.InitializeGeoIP(); err != nil {
 		panic(err.Error())
 	}
 	defer util.GeoIP.Close()
 
-	err = database.InitializeDatabase()
-	if err != nil {
+	if err := database.InitializeDatabase(); err != nil {
 		panic(err.Error())
 	}
+
 	defer database.DatabaseClient.Close()
 
 	app := fiber.New()

@@ -21,6 +21,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldEmailVerified holds the string denoting the emailverified field in the database.
 	FieldEmailVerified = "email_verified"
+	// FieldAvatarURL holds the string denoting the avatarurl field in the database.
+	FieldAvatarURL = "avatar_url"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
 	EdgeSessions = "sessions"
 	// EdgeTotpMethods holds the string denoting the totpmethods edge name in mutations.
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldPassword,
 	FieldCreatedAt,
 	FieldEmailVerified,
+	FieldAvatarURL,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

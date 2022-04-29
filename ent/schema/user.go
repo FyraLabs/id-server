@@ -24,6 +24,7 @@ func (User) Fields() []ent.Field {
 		field.String("password"),
 		field.Time("createdAt").Default(time.Now),
 		field.Bool("emailVerified").Default(false),
+		field.String("avatarURL").Optional().Nillable(),
 	}
 }
 
