@@ -1,19 +1,26 @@
 package user
 
 import (
+	"errors"
 	"image"
 	"io"
 	"path"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/ent"
 	"github.com/fyralabs/id-server/util"
 	"github.com/gofiber/fiber/v2"
-	"github.com/minio/minio-go/v7"
-	"golang.org/x/image/draw"
 
 	// "golang.org/x/image/webp"
+	_ "image/jpeg"
+	_ "image/png"
+
 	"github.com/chai2010/webp"
+	_ "golang.org/x/image/webp"
+	"golang.org/x/sync/errgroup"
 )
 
 func UploadAvatar(c *fiber.Ctx) error {
@@ -47,30 +54,64 @@ func UploadAvatar(c *fiber.Ctx) error {
 		})
 	}
 
-	dst := image.NewRGBA(image.Rect(0, 0, 500, 500))
-	draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
-
-	reader, writer := io.Pipe()
-
-	if err := webp.Encode(writer, dst, &webp.Options{}); err != nil {
-		return err
+	type SubImager interface {
+		SubImage(r image.Rectangle) image.Image
 	}
 
+	subImager, ok := src.(SubImager)
+	if !ok {
+		return errors.New("image does not implement SubImage")
+	}
+
+	startX := 0
+	startY := 0
+
+	if src.Bounds().Dx() > 500 {
+		startX = (src.Bounds().Dx() - 500) / 2
+	}
+
+	if src.Bounds().Dy() > 500 {
+		startY = (src.Bounds().Dy() - 500) / 2
+	}
+
+	dst := subImager.SubImage(image.Rect(startX, startY, 500+startX, 500+startY))
+
+	group, _ := errgroup.WithContext(c.Context())
+	reader, writer := io.Pipe()
 	objectPath := path.Join(user.ID.String(), "avatar.webp")
 
-	if _, err = util.S3Client.PutObject(
-		c.Context(),
-		config.Environment.S3Bucket,
-		objectPath,
-		reader,
-		// TODO: Get the size of the file, this wastes memory
-		-1,
-		minio.PutObjectOptions{ContentType: "image/webp"},
-	); err != nil {
+	group.Go(func() error {
+		defer writer.Close()
+		if err := webp.Encode(writer, dst, &webp.Options{
+			Lossless: true,
+		}); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	group.Go(func() error {
+		defer reader.Close()
+		if _, err = util.UploadClient.Upload(
+			&s3manager.UploadInput{
+				Bucket:      aws.String(config.Environment.S3Bucket),
+				Key:         aws.String(objectPath),
+				ContentType: aws.String("image/webp"),
+				Body:        reader,
+			},
+		); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err := group.Wait(); err != nil {
 		return err
 	}
 
-	url := config.Environment.S3AvatarURLPrefix + objectPath
+	url := "https://accounts-cdn.fyralabs.com/" + objectPath
 
 	if _, err := user.Update().SetAvatarURL(url).Save(c.Context()); err != nil {
 		return err
@@ -90,11 +131,12 @@ func DeleteAvatar(c *fiber.Ctx) error {
 
 	objectPath := path.Join(user.ID.String(), "avatar.webp")
 
-	if err := util.S3Client.RemoveObject(
+	if _, err := util.S3Client.DeleteObjectWithContext(
 		c.Context(),
-		config.Environment.S3Bucket,
-		objectPath,
-		minio.RemoveObjectOptions{},
+		&s3.DeleteObjectInput{
+			Bucket: aws.String(config.Environment.S3Bucket),
+			Key:    aws.String(objectPath),
+		},
 	); err != nil {
 		return err
 	}

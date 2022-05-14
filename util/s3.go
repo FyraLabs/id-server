@@ -1,24 +1,31 @@
 package util
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/fyralabs/id-server/config"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-var S3Client *minio.Client
+var UploadClient *s3manager.Uploader
+var S3Client *s3.S3
 
 func InitializeS3() error {
-	minioClient, err := minio.New(config.Environment.S3Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(config.Environment.S3AccessKey, config.Environment.S3SecretKey, ""),
-		Secure: true,
+	session, err := session.NewSession(&aws.Config{
+		S3ForcePathStyle: aws.Bool(true),
+		Region:           aws.String("auto"),
+		Endpoint:         aws.String(config.Environment.S3Endpoint),
+		Credentials:      credentials.NewStaticCredentials(config.Environment.S3AccessKey, config.Environment.S3SecretKey, ""),
 	})
 
 	if err != nil {
 		return err
 	}
 
-	S3Client = minioClient
+	S3Client = s3.New(session)
+	UploadClient = s3manager.NewUploader(session)
 
 	return nil
 }

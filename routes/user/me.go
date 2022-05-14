@@ -14,10 +14,10 @@ func GetMe(c *fiber.Ctx) error {
 		})
 	}
 
-	avatarURL := "https://hashvatar.vercel.app/" + user.ID.String() + "/stagger"
+	var avatarURL *string
 
 	if user.AvatarURL != nil {
-		avatarURL = *user.AvatarURL
+		avatarURL = user.AvatarURL
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
