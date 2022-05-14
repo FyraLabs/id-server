@@ -60,7 +60,7 @@ func UploadAvatar(c *fiber.Ctx) error {
 
 	if _, err = util.S3Client.PutObject(
 		c.Context(),
-		config.Environment.S3AvatarBucket,
+		config.Environment.S3Bucket,
 		objectPath,
 		reader,
 		// TODO: Get the size of the file, this wastes memory
@@ -92,7 +92,7 @@ func DeleteAvatar(c *fiber.Ctx) error {
 
 	if err := util.S3Client.RemoveObject(
 		c.Context(),
-		config.Environment.S3AvatarBucket,
+		config.Environment.S3Bucket,
 		objectPath,
 		minio.RemoveObjectOptions{},
 	); err != nil {
