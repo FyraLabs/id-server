@@ -10,6 +10,8 @@ import (
 func Register(app *fiber.App) {
 	app.Use(cors.New())
 
+	app.Get("/lookup", user.LookupConnectToken)
+
 	userGroup := app.Group("/user")
 	userGroup.Post("/register", user.Register)
 	userGroup.Post("/login", user.Login)
@@ -30,9 +32,5 @@ func Register(app *fiber.App) {
 	meGroup.Get("/2fa", user.GetMethods)
 	meGroup.Post("/2fa", user.AddMethod)
 	meGroup.Delete("/2fa/:id", user.RemoveMethod)
-
-	oidcGroup := userGroup.Group("/oidc")
-	oidcGroup.Post("/logout", user.OIDCLogout)
-	oidcGroup.Use(middleware.Auth)
-	oidcGroup.Post("/login", user.OIDCLogin)
+	meGroup.Post("/connect", user.Connect)
 }

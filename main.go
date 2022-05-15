@@ -14,6 +14,8 @@ func main() {
 		panic(err.Error())
 	}
 
+	util.InitializeConnectClients()
+
 	if err := util.InitializeS3(); err != nil {
 		panic(err.Error())
 	}
