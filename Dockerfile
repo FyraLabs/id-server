@@ -5,7 +5,7 @@ ENV APP_HOME /go/src/id-server
 WORKDIR "$APP_HOME"
 COPY . .
 
-RUN apk add -y gcc
+RUN apk add gcc
 
 RUN go mod download
 RUN go mod verify
