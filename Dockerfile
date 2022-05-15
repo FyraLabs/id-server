@@ -3,7 +3,7 @@ FROM golang:alpine as builder
 ENV APP_HOME /go/src/id-server
 
 WORKDIR "$APP_HOME"
-COPY src/ .
+COPY . .
 
 RUN go mod download
 RUN go mod verify
