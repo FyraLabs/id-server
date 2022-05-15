@@ -9,7 +9,7 @@ RUN apk add gcc musl-dev
 
 RUN go mod download
 RUN go mod verify
-RUN go build -o /id-server
+RUN go build -o id-server
 
 FROM golang:alpine
 
