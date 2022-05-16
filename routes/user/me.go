@@ -6,6 +6,7 @@ import (
 )
 
 func GetMe(c *fiber.Ctx) error {
+	println(c.Get("X-Forwarded-For"))
 	user := c.Locals("user").(*ent.User)
 
 	if user == nil {
