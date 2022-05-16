@@ -70,7 +70,7 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "User-Agent header not found"})
 	}
 
-	tokenString, err := util.CreateSession(u.ID, userAgent, c.IP(), c.Context())
+	tokenString, err := util.CreateSession(u.ID, userAgent, util.GetClientIP(c), c.Context())
 	if err != nil {
 		return err
 	}

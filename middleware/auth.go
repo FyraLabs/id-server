@@ -44,7 +44,7 @@ func Auth(c *fiber.Ctx) error {
 	}
 
 	s, err = s.Update().
-		SetIP(c.IP()).
+		SetIP(util.GetClientIP(c)).
 		SetUserAgent(userAgent).
 		SetLastUsedAt(time.Now()).
 		Save(c.Context())
