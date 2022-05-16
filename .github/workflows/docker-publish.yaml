@@ -10,6 +10,7 @@ on:
     - cron: "21 19 * * *"
   push:
     branches: [main]
+    tags: ["v*.*.*"]
   pull_request:
     branches: [main]
 
