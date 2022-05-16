@@ -33,7 +33,12 @@ func main() {
 
 	defer database.DatabaseClient.Close()
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			c.Status(500).JSON(fiber.Map{"message": "Internal server error"})
+			return nil
+		},
+	})
 	routes.Register(app)
 	if err := app.Listen(":8080"); err != nil {
 		panic(err.Error())
