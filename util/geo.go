@@ -7,6 +7,7 @@ import (
 
 var GeoIP *geoip2.Reader
 
+// TODO: we need to get the latest gepip and put it in docker
 func InitializeGeoIP() error {
 	db, err := geoip2.Open(config.Environment.GeoLite2CityPath)
 	if err != nil {
