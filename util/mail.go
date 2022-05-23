@@ -62,8 +62,8 @@ func SendVerificationEmail(user *ent.User) error {
 	a.Execute(buf, data)
 
 	to := mail.NewEmail(user.Name, user.Email)
-	from := mail.NewEmail("FiraLabs Accounts", "noreply@fyralabs.com")
-	subject := "Verify Your FyraLabs Account"
+	from := mail.NewEmail("Fyra Accounts", "noreply@fyralabs.com")
+	subject := "Verify Your Fyra Account"
 	message := mail.NewSingleEmail(from, subject, to, "", buf.String())
 
 	r, err := SendGridClient.Send(message)
