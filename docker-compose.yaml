@@ -35,3 +35,8 @@ services:
 
 volumes:
   postgres-data:
+
+networks:
+  driver: default
+  config:
+    - subnet: ${DOCKER_SUBNET}

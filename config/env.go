@@ -16,6 +16,7 @@ type EnvironmentType struct {
 	S3AvatarURLPrefix string `env:"S3_AVATAR_URL_PREFIX,required=true"`
 	ClientConnectIDs  string `env:"CLIENT_CONNECT_IDS,required=true"`
 	GeoLite2CityPath  string `env:"GEO_LITE_2_CITY_PATH,required=true"`
+	TrustedProxies	  string `env:"TRUSTED_PROXIES,required=true"`
 }
 
 var Environment EnvironmentType
