@@ -17,6 +17,7 @@ services:
       - SENDGRID_KEY
       - JWT_KEY
       - CLIENT_CONNECT_IDS
+      - TRUSTED_PROXIES
   postgres:
     image: postgres:latest
     restart: unless-stopped
