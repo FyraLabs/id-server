@@ -1,0 +1,37 @@
+# Example docker-compose for deployment or staging
+
+version: "3.9"
+services:
+  server:
+    image: ghcr.io/fyralabs/id-server:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_OPTIONS=host=postgres port=5432 user=${POSTGRES_USER} dbname=${POSTGRES_DB} password=${POSTGRES_PASSWORD} sslmode=disable
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+      - S3_ENDPOINT
+      - S3_BUCKET
+      - S3_AVATAR_URL_PREFIX
+      - SENDGRID_KEY
+      - JWT_KEY
+      - CLIENT_CONNECT_IDS
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    depends_on:
+      - server
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TOKEN}
+
+volumes:
+  postgres-data:
