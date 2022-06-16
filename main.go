@@ -39,7 +39,7 @@ func main() {
 			return nil
 		},
 		EnableTrustedProxyCheck: true,
-		TrustedProxies:          util.Environment.TrustedProxies,
+		TrustedProxies:          config.Environment.TrustedProxies,
 	})
 	routes.Register(app)
 	if err := app.Listen(":8080"); err != nil {
