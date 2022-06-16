@@ -5,6 +5,8 @@ services:
   server:
     image: ghcr.io/fyralabs/id-server:latest
     restart: unless-stopped
+    networks:
+      - main
     depends_on:
       - postgres
     environment:
@@ -21,6 +23,8 @@ services:
   postgres:
     image: postgres:latest
     restart: unless-stopped
+    networks:
+      - main
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -30,6 +34,8 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
+    networks:
+      - main
     depends_on:
       - server
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TOKEN}
@@ -38,6 +44,7 @@ volumes:
   postgres-data:
 
 networks:
-  driver: default
-  config:
-    - subnet: ${DOCKER_SUBNET}
+  main:
+    driver: default
+    config:
+      - subnet: ${DOCKER_SUBNET}
