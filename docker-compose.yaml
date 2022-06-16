@@ -45,6 +45,7 @@ volumes:
 
 networks:
   main:
-    driver: default
-    config:
-      - subnet: ${DOCKER_SUBNET}
+    ipam:
+      driver: default
+      config:
+        - subnet: ${DOCKER_SUBNET}
