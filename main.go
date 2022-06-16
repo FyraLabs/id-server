@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	
+
 	"github.com/fyralabs/id-server/config"
 	"github.com/fyralabs/id-server/database"
 	"github.com/fyralabs/id-server/routes"
@@ -41,7 +41,7 @@ func main() {
 			return nil
 		},
 		EnableTrustedProxyCheck: true,
-		TrustedProxies:          strings.Split(config.Environment.TrustedProxies),
+		TrustedProxies:          strings.Split(config.Environment.TrustedProxies, ","),
 	})
 	routes.Register(app)
 	if err := app.Listen(":8080"); err != nil {
